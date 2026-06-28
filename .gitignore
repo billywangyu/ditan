@@ -1,0 +1,28 @@
+# ================== 通用开发文件 ==================
+# IDE 配置文件 (IntelliJ IDEA, VSCode 等)
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# 系统日志
+*.log
+
+# ================== 前端 (Vue) 忽略 ==================
+# 注意路径必须带上 frontend/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env.local
+
+# ================== 后端 (Spring Boot) 忽略 ==================
+# 注意路径必须带上 backend/
+backend/target/
+backend/*.log
+backend/.env.local  # 后端如果有本地配置
+# (如果后端是用 Gradle 构建，可能有 build/ 目录；Maven 则是 target/)
+
+# (如果后端还有生成的 jar 包)
+*.jar
+*.war
+*.ear

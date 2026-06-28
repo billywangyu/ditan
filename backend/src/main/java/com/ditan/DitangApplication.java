@@ -1,0 +1,11 @@
+package com.ditan;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DitangApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DitangApplication.class, args);
+    }
+}
