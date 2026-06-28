@@ -17,6 +17,7 @@ public class StallRequest {
     private Double latitude;
 
     private String address;
+	private Long ownerId; // 新增字段
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -28,4 +29,6 @@ public class StallRequest {
     public void setLatitude(Double latitude) { this.latitude = latitude; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+	public Long getOwnerId() { return ownerId; }
+    public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
 }

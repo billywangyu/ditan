@@ -30,6 +30,7 @@ public class StallService {
         stall.setCategory(request.getCategory());
         stall.setLocation(geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude())));
         stall.setAddress(request.getAddress());
+        stall.setOwnerId(request.getOwnerId()); // 把前端传来的用户ID存进去
         stall = stallRepository.save(stall);
         return StallResponse.fromEntity(stall);
     }

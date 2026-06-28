@@ -32,6 +32,9 @@ public class Stall {
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
+	
+	@Column(name = "owner_id")
+    private Long ownerId;
 
     @PrePersist
     public void prePersist() {
@@ -57,4 +60,6 @@ public class Stall {
     public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+	public Long getOwnerId() { return ownerId; }
+    public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
 }
