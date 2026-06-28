@@ -17,7 +17,13 @@ public class StallRequest {
     private Double latitude;
 
     private String address;
-	private Long ownerId; // 新增字段
+
+    private Long ownerId;
+
+    // ======= 新增字段 =======
+    private String phone;
+    private String description;
+    private String imageUrl;
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -29,6 +35,13 @@ public class StallRequest {
     public void setLatitude(Double latitude) { this.latitude = latitude; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
-	public Long getOwnerId() { return ownerId; }
+    public Long getOwnerId() { return ownerId; }
     public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

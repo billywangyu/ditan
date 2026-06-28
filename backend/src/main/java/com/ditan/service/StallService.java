@@ -30,13 +30,25 @@ public class StallService {
         stall.setCategory(request.getCategory());
         stall.setLocation(geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude())));
         stall.setAddress(request.getAddress());
-        stall.setOwnerId(request.getOwnerId()); // 把前端传来的用户ID存进去
+        stall.setOwnerId(request.getOwnerId());
+
+        stall.setPhone(request.getPhone());
+        stall.setDescription(request.getDescription());
+        stall.setImageUrl(request.getImageUrl());
+
         stall = stallRepository.save(stall);
         return StallResponse.fromEntity(stall);
     }
 
     public List<StallResponse> getNearbyStalls(double lng, double lat, double radius) {
         return stallRepository.findNearby(lng, lat, radius).stream()
+                .map(StallResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    // 新增：获取所有营业中的摊位
+    public List<StallResponse> getAllStalls() {
+        return stallRepository.findAllByStatusOrderByCreatedAtDesc("OPEN").stream()
                 .map(StallResponse::fromEntity)
                 .collect(Collectors.toList());
     }

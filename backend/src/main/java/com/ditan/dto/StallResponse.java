@@ -15,6 +15,11 @@ public class StallResponse {
     private LocalDateTime expireAt;
     private LocalDateTime createdAt;
 
+    // ======= 新增的字段 =======
+    private String phone;
+    private String description;
+    private String imageUrl;
+
     public static StallResponse fromEntity(Stall stall) {
         StallResponse resp = new StallResponse();
         resp.id = stall.getId();
@@ -26,9 +31,16 @@ public class StallResponse {
         resp.status = stall.getStatus();
         resp.expireAt = stall.getExpireAt();
         resp.createdAt = stall.getCreatedAt();
+        
+        // ======= 新增字段赋值 =======
+        resp.phone = stall.getPhone();
+        resp.description = stall.getDescription();
+        resp.imageUrl = stall.getImageUrl();
+        
         return resp;
     }
 
+    // ======= 加上新增字段的 Getter 和 Setter =======
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
@@ -47,4 +59,11 @@ public class StallResponse {
     public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

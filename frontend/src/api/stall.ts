@@ -8,6 +8,10 @@ export interface StallRequest {
   longitude: number
   latitude: number
   address: string
+  ownerId?: number
+  phone?: string
+  description?: string
+  imageUrl?: string
 }
 
 export interface StallResponse {
@@ -20,6 +24,9 @@ export interface StallResponse {
   status: string
   expireAt: string
   createdAt: string
+  phone?: string
+  description?: string
+  imageUrl?: string
 }
 
 export const stallApi = {
@@ -30,5 +37,9 @@ export const stallApi = {
     return api.get<StallResponse[]>('/stalls/nearby', {
       params: { lng, lat, radius }
     })
+  },
+  // 新增：获取所有摊位
+  getAllStalls() {
+    return api.get<StallResponse[]>('/stalls/all')
   }
 }

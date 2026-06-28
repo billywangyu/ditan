@@ -15,4 +15,7 @@ public interface StallRepository extends JpaRepository<Stall, Long> {
     List<Stall> findNearby(@Param("lng") double lng,
                            @Param("lat") double lat,
                            @Param("radius") double radius);
+
+    // 新增：查询所有营业中的摊位，按发布时间倒序排列
+    List<Stall> findAllByStatusOrderByCreatedAtDesc(String status);
 }

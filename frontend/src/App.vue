@@ -13,8 +13,8 @@
         <span class="text-xs mt-1">发布</span>
       </router-link>
       <router-link to="/profile" class="flex flex-col items-center text-gray-500 hover:text-blue-600">
-        <span class="text-xl">👤</span>
-        <span class="text-xs mt-1">我的</span>
+        <span class="text-xl">📋</span>
+        <span class="text-xs mt-1">地摊列表</span>
       </router-link>
     </div>
   </div>

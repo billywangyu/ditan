@@ -23,36 +23,47 @@ const store = useStallStore()
 const mapRef = ref<L.Map | null>(null)
 let markerGroup: L.LayerGroup | null = null
 
-// 防抖定时器
 let moveTimer: ReturnType<typeof setTimeout> | null = null
 
-// 核心逻辑
 const loadStalls = async (lng: number, lat: number, radius = 10000) => {
   if (!mapRef.value) return
-
-  // 1. 确保每次请求前，都先把旧的图钉彻底清理掉
   if (!markerGroup) {
     markerGroup = L.layerGroup().addTo(mapRef.value)
   }
   markerGroup.clearLayers()
 
   try {
-    // 2. 请求数据
     await store.fetchNearby(lng, lat, radius)
 
-    // 3. 重新绘制新图钉
+    // ======= 增强版图钉弹窗 =======
     store.stalls.forEach(stall => {
+            // 处理图片，如果没有图片则显示默认占位图（增加 object-contain 防止变形，同时让图片居中）
+      const imgHtml = stall.imageUrl 
+        ? `<div class="w-full h-32 bg-gray-100 flex items-center justify-center rounded mb-2 overflow-hidden"><img src="${stall.imageUrl}" class="w-full h-full object-contain" /></div>` 
+        : `<div class="w-full h-32 bg-gray-200 flex items-center justify-center text-gray-400 text-sm rounded mb-2">暂无图片</div>`
+      // 2. 高德地图导航链接
+      const navigateUrl = `https://uri.amap.com/marker?position=${stall.longitude},${stall.latitude}&name=${stall.title}`
+
       const marker = L.marker([stall.latitude, stall.longitude])
-        .bindPopup(`<b>${stall.title}</b><br/>${stall.category || ''}`)
+        .bindPopup(`
+          <div class="w-64">
+            ${imgHtml}
+            <h3 class="font-bold text-lg text-blue-600">${stall.title}</h3>
+            <p class="text-sm text-gray-600 mt-1">📍 ${stall.address || '地址未填'}</p>
+            <p class="text-sm text-gray-500 mt-1 line-clamp-2">${stall.description || '摊主很懒，什么都没留下~'}</p>
+            <div class="mt-3 flex gap-2">
+              ${stall.phone ? `<a href="tel:${stall.phone}" class="flex-1 bg-green-500 text-white text-center text-sm py-1 rounded hover:bg-green-600">📞 电话</a>` : ''}
+              <a href="${navigateUrl}" target="_blank" class="flex-1 bg-blue-500 text-white text-center text-sm py-1 rounded hover:bg-blue-600">🧭 导航</a>
+            </div>
+          </div>
+        `)
       markerGroup!.addLayer(marker)
     })
   } catch (error) {
-    console.error('加载摊位失败，可能是网络问题', error)
-    // 不需要额外操作，因为第一步已经清空了旧图钉
+    console.error('加载摊位失败', error)
   }
 }
 
-// 封装防抖执行函数（只有停止拖拽 300ms 后才会请求）
 const debouncedLoadStalls = (lng: number, lat: number) => {
   if (moveTimer) clearTimeout(moveTimer)
   moveTimer = setTimeout(() => {
@@ -76,17 +87,14 @@ onMounted(async () => {
     maxZoom: 18
   }).addTo(map)
 
-  // 监听地图拖拽结束，触发防抖请求
   map.on('moveend', () => {
     const center = map.getCenter()
     debouncedLoadStalls(center.lng, center.lat)
   })
 
-  // 初始加载数据
   await loadStalls(defaultLng, defaultLat, 10000)
 })
 
-// 从发布页切回地图页时，直接重新加载（不需要防抖等待）
 onBeforeRouteUpdate(async (to, from, next) => {
   if (to.name === 'MapView') {
     if (moveTimer) clearTimeout(moveTimer)

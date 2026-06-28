@@ -31,4 +31,10 @@ public class StallController {
             @RequestParam(defaultValue = "5000") double radius) {
         return ResponseEntity.ok(stallService.getNearbyStalls(lng, lat, radius));
     }
+
+    // 新增：获取全部摊位列表接口
+    @GetMapping("/all")
+    public ResponseEntity<List<StallResponse>> getAllStalls() {
+        return ResponseEntity.ok(stallService.getAllStalls());
+    }
 }

@@ -43,6 +43,20 @@
         <label class="block mb-1">摊位详细地址描述</label>
         <input v-model="form.address" type="text" placeholder="例如：西湖断桥北侧100米" class="w-full border rounded px-3 py-2" />
       </div>
+
+      <!-- ======= 新增的 3 个输入框 ======= -->
+      <div>
+        <label class="block mb-1">📞 联系电话</label>
+        <input v-model="form.phone" type="text" placeholder="例如：13800008888" class="w-full border rounded px-3 py-2" />
+      </div>
+      <div>
+        <label class="block mb-1">📝 摊主自我介绍</label>
+        <textarea v-model="form.description" placeholder="介绍下你的特色或营业时间" class="w-full border rounded px-3 py-2 h-20 resize-none" />
+      </div>
+      <div>
+        <label class="block mb-1">🖼️ 摊位图片（填入网络图片地址）</label>
+        <input v-model="form.imageUrl" type="url" placeholder="例如：https://example.com/stall.jpg" class="w-full border rounded px-3 py-2" />
+      </div>
       
       <button type="submit" :disabled="submitting" class="bg-blue-500 text-white px-4 py-2 rounded w-full">
         {{ submitting ? '提交中...' : '发布摊位' }}
@@ -64,19 +78,22 @@ const submitting = ref(false)
 const successMsg = ref('')
 const errorMsg = ref('')
 
+// ======= 表单新增了 phone, description, imageUrl =======
 const form = reactive({
   ownerId: 1,
   title: '',
   category: '',
   longitude: 120.16,
   latitude: 30.25,
-  address: ''
+  address: '',
+  phone: '',
+  description: '',
+  imageUrl: ''
 })
 
 let pickerMap: L.Map | null = null
-let markerGroup: L.LayerGroup | null = null // 用于管理小地图上选点的图钉
+let markerGroup: L.LayerGroup | null = null
 
-// 初始化地图
 onMounted(async () => {
   await nextTick()
   pickerMap = L.map('addMap').setView([form.latitude, form.longitude], 15)
@@ -89,23 +106,16 @@ onMounted(async () => {
     maxZoom: 18
   }).addTo(pickerMap)
 
-  // 创建一个空图层组，专门只放用户点的图钉
   markerGroup = L.layerGroup().addTo(pickerMap)
 
-  // 监听小地图点击，自动填入经纬度并标记位置
   pickerMap.on('click', (e: L.LeafletMouseEvent) => {
-    // 每次点击都清除之前的图钉，只留当前这一个
     markerGroup?.clearLayers()
-    
     form.longitude = e.latlng.lng
     form.latitude = e.latlng.lat
-    
-    // 在点击的位置画上图钉
     L.marker([form.latitude, form.longitude]).addTo(markerGroup!)
   })
 })
 
-// 一键获取当前位置并标记
 const getCurrentLocation = () => {
   if (!navigator.geolocation) {
     alert('您的浏览器不支持定位功能，请手动输入或点击地图选点。')
@@ -115,31 +125,23 @@ const getCurrentLocation = () => {
     (position) => {
       const lat = position.coords.latitude
       const lng = position.coords.longitude
-      
       form.latitude = lat
       form.longitude = lng
-
       if (pickerMap) {
         pickerMap.setView([lat, lng], 16)
-        
-        markerGroup?.clearLayers() // 清除旧定位图钉
-        L.marker([lat, lng]).addTo(markerGroup!) // 画出新定位图钉
+        markerGroup?.clearLayers()
+        L.marker([lat, lng]).addTo(markerGroup!)
       }
-      
       alert('✅ 已成功获取您当前所在的位置！请确认地图上标记的位置是否正确。')
     },
     (error) => {
       console.error('定位失败:', error)
       alert('定位失败，请确保浏览器已允许“获取位置”权限，或手动点击小地图选点。')
     },
-    {
-      enableHighAccuracy: true,
-      timeout: 5000
-    }
+    { enableHighAccuracy: true, timeout: 5000 }
   )
 }
 
-// 提交表单
 async function submitForm() {
   submitting.value = true
   successMsg.value = ''

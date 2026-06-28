@@ -12,29 +12,39 @@ public class Stall {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "title", nullable = false, length = 100)
     private String title;
 
-    @Column(length = 30)
+    @Column(name = "category", length = 30)
     private String category;
 
-    @Column(columnDefinition = "geometry(Point,4326)", nullable = false)
+    @Column(name = "location", columnDefinition = "geometry(Point,4326)", nullable = false)
     private Point location;
 
-    @Column(length = 200)
+    @Column(name = "address", length = 200)
     private String address;
 
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private String status = "OPEN";
+
+    @Column(name = "owner_id")
+    private Long ownerId;
 
     @Column(name = "expire_at")
     private LocalDateTime expireAt;
 
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-	
-	@Column(name = "owner_id")
-    private Long ownerId;
+
+    // ======= 新增字段 =======
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "description", length = 500)
+    private String description;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @PrePersist
     public void prePersist() {
@@ -44,6 +54,7 @@ public class Stall {
         }
     }
 
+    // ======= Getter & Setter (包括新增的) =======
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }
@@ -56,10 +67,17 @@ public class Stall {
     public void setAddress(String address) { this.address = address; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public Long getOwnerId() { return ownerId; }
+    public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
     public LocalDateTime getExpireAt() { return expireAt; }
     public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-	public Long getOwnerId() { return ownerId; }
-    public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }
