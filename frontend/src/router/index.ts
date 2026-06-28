@@ -10,6 +10,16 @@ const routes = [
     path: '/add',
     name: 'AddStall',
     component: () => import('@/views/AddStall.vue')
+  },
+  {
+    path: '/profile',
+    name: 'ProfileView',
+    component: () => import('@/views/ProfileView.vue')
+  },
+  {
+    path: '/about',
+    name: 'AboutView',
+    component: () => import('@/views/AboutView.vue')
   }
 ]
 
