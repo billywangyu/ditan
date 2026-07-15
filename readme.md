@@ -1,6 +1,4 @@
-
-
-# 地摊推荐平台 - 技术实现与开发文档
+# 地摊推荐平台 - 项目开发与部署文档
 
 ## 1. 项目概述
 本项目是一个基于地理信息系统（GIS）的本地生活服务平台。旨在帮助用户查看、发布和搜索周边的地摊摊位，并在地图上直观显示，提供联系电话与导航功能。
@@ -83,7 +81,41 @@ CREATE TABLE stall (
 | `GET` | `/api/stalls/nearby` | `lng`, `lat`, `radius` | 获取距离当前坐标指定半径(米)内的摊位 |
 | `GET` | `/api/stalls/all` | 无 | 获取数据库中所有营业状态为 OPEN 的摊位列表 |
 
-## 8. 开发过程中踩过的坑与解决方案
+## 8. 代码版本控制 (GitHub 部署)
+项目托管于 GitHub，采用 SSH 协议进行代码同步。请确保本地/服务器已配置好 SSH Key，并已添加到 GitHub 账号的 Settings -> SSH and GPG keys 中。
+
+### 8.1 首次提交代码到 GitHub
+```bash
+# 1. 初始化 Git 仓库
+git init
+
+# 2. 配置提交者身份 (首次运行必须执行)
+git config --global user.email "你的GitHub邮箱@example.com"
+git config --global user.name "你的GitHub用户名"
+
+# 3. 添加远程仓库地址 (使用 SSH 协议)
+git remote add origin git@github.com:billywangyu/ditan.git
+
+# 4. 添加所有文件至暂存区 (注意：生产环境需先配置好 .gitignore 避免上传 node_modules 和 target 等)
+git add .
+
+# 5. 创建主分支并提交
+git branch -M main
+git commit -m "first commit"
+
+# 6. 推送至 GitHub
+git push -u origin main
+```
+
+### 8.2 服务器更新代码
+在阿里云服务器上更新最新代码：
+```bash
+cd /opt/ditan
+git pull origin main
+```
+*(注：如果服务端根目录下包含 `ditan` 子文件夹导致嵌套 Git 警告，执行 `git rm --cached -r ditan` 取消嵌套即可。)*
+
+## 9. 开发过程中踩过的坑与解决方案
 1.  **天地图 418 报错（我是茶壶）**：
     *   *原因*：天地图 WAF 防火墙拦截了 `localhost` 的直接请求。
     *   *解决*：在 `vite.config.ts` 中配置 `/tianditu` 代理，并将前端所有 `tileLayer` 的请求地址改为 `/tianditu/DataServer?...`，完美绕过拦截。
@@ -93,21 +125,76 @@ CREATE TABLE stall (
 3.  **图片拉伸变形**：
     *   *原因*：CSS 强制设定了图片的固定宽高 (`w-full h-40`)。
     *   *解决*：引入 `object-contain` 配合 `flex items-center justify-center` 容器，保持图片原比例居中显示，不拉伸。
+4.  **打包后 Leaflet 图钉图标丢失**：
+    *   *原因*：Vite 打包时将 `node_modules/leaflet/dist/images/` 路径重写。
+    *   *解决*：将 `images` 目录下的 `.png` 图片手动复制至 `frontend/public/images/`，并配置图钉 `iconUrl` 指向 `/images/marker-icon.png`。
 
-## 9. 后续维护与扩展建议
+## 10. 部署到阿里云轻量服务器 (Nginx + Spring Boot)
+### 10.1 服务器环境准备
+*   **JDK 17**：`apt install openjdk-17-jre-headless -y`
+*   **Maven**：`apt install maven -y`
+*   **Node.js 18**：`curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && apt install -y nodejs`
+*   **Nginx**：`apt install nginx -y`
+*   **PostgreSQL 14 + PostGIS**：自行安装或使用宝塔面板一键部署，需配置 `pg_hba.conf` 和 `postgresql.conf` 允许本地连接。
+
+### 10.2 后端部署
+```bash
+cd /opt/ditan/backend
+# 打包并跳过测试
+mvn clean package -DskipTests
+# 后台启动（退出 SSH 仍运行）
+pkill -f ditan-backend
+nohup java -jar target/ditan-backend-0.0.1-SNAPSHOT.jar --spring.config.location=/opt/ditan/config/application.yml > nohup.out 2>&1 &
+```
+
+### 10.3 前端打包与部署
+```bash
+cd /opt/ditan/frontend
+npm install
+npm run build
+# 生成的 dist 目录即为 Nginx 的 root 目录
+```
+
+### 10.4 Nginx 反向代理配置 (Nginx 核心配置)
+```nginx
+server {
+    listen 80;
+    server_name 120.26.140.51;  # 待域名通过备案后，改为 ditan2026.online
+
+    root /opt/ditan/frontend/dist;
+    index index.html;
+
+    # 处理 Vue 路由
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 转发后端 API 请求
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # 转发天地图瓦片请求（解决 418 防盗链及跨域问题）
+    location /tianditu/ {
+        proxy_pass https://t0.tianditu.gov.cn/;
+        proxy_set_header Host t0.tianditu.gov.cn;
+        proxy_set_header Referer 'http://120.26.140.51';
+        proxy_cache off;
+        proxy_no_cache 1;
+    }
+}
+```
+配置完成后执行 `systemctl reload nginx` 生效。
+
+## 11. 后续维护与扩展建议
 1.  **图片上传功能**：目前图片只支持 URL 填写的方案。后续可增加后端文件上传接口 (`MultipartFile`)，直接上传本地图片至服务器或云存储（如阿里云 OSS），再将返回的 URL 存入数据库。
 2.  **真实用户登录**：使用 Spring Security + JWT 实现登录注册。将表里的 `owner_id` 与实际登录用户做绑定，实现真正的“我的摊位”数据隔离。
-3.  **项目部署到云服务器**：
-    *   修改 `application.yml` 绑定服务器的公网 IP。
-    *   运行 `mvn clean package` 生成 `.jar` 包，通过 `nohup java -jar xxx.jar &` 在服务器后台运行后端。
-    *   运行 `npm run build` 生成静态资源，放置于 Nginx 目录下，配置反向代理转发 `/api` 请求到后端的 `8080` 端口。
-4.  **敏感信息安全**：切记在 `.gitignore` 中忽略 `.env.local` 文件，不要将**天地图的密钥**或**数据库生产环境密码**提交到 GitHub 等公共代码仓库中。
+3.  **敏感信息安全**：切记在 `.gitignore` 中忽略 `.env.local`、`application-prod.yml` 等文件，不要将**天地图的密钥**或**数据库生产环境密码**提交到 GitHub 等公共代码仓库中。
 
 ---
-github部署   git init
-			git commit -m "first commit"
-			git branch -M main
-			git remote add origin git@github.com:billywangyu/ditan.git
-			git add .
-			git push -u origin main
-			
+
+**最后更新**：2026年7月15日
+**项目地址**：`git@github.com:billywangyu/ditan.git`
